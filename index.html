@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>AVS.MOHAN - MQTT Control Panel</title>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<style>
+body {
+  background: #0f0f0f;
+  color: white;
+  font-family: Arial;
+  margin: 0;
+  padding: 10px;
+}
+
+/* GRID - MOBILE FRIENDLY */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+}
+
+/* PANEL */
+.panel {
+  background: #1b1b1b;
+  padding: 18px;
+  border-radius: 14px;
+  text-align: center;
+  box-shadow: 0px 0px 10px #000;
+}
+
+/* TITLE WITH ICON */
+.panel h2 {
+  font-size: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+/* DIGITAL DISPLAY */
+.statusBox {
+  font-size: 40px;
+  background: black;
+  color: #00ff00;
+  padding: 12px;
+  margin-top: 10px;
+  font-family: 'Courier New';
+  border-radius: 8px;
+}
+
+/* BUTTONS */
+.btn {
+  width: 100%;
+  padding: 16px;
+  font-size: 22px;
+  border-radius: 10px;
+  border: none;
+  color: white;
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.green { background: #0a8f0a; }
+.red   { background: #cc0000; }
+
+.icon {
+  font-size: 26px;
+}
+
+h1 {
+  text-align: center;
+  font-size: 28px;
+  margin-bottom: 15px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>
+  <span class="material-icons" style="font-size:34px;color:#00e6e6;">dashboard</span>
+  AVS.MOHAN - CONTROL PANEL
+</h1>
+
+<audio id="alarmSound">
+  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
+</audio>
+
+<div class="grid">
+
+<!-- ESP32 STATUS -->
+<div class="panel">
+  <h2><span class="material-icons">memory</span> ESP32 STATUS</h2>
+  <div id="espStatus" class="statusBox">---</div>
+</div>
+
+<!-- MAIN POWER -->
+<div class="panel">
+  <h2><span class="material-icons">bolt</span> MAIN POWER</h2>
+  <div id="mpStatus" class="statusBox">---</div>
+</div>
+
+<!-- GENERATOR POWER -->
+<div class="panel">
+  <h2><span class="material-icons">electrical_services</span> GEN POWER</h2>
+  <div id="gpStatus" class="statusBox">---</div>
+</div>
+
+<!-- GENERATOR STATUS -->
+<div class="panel">
+  <h2><span class="material-icons">engineering</span> GEN STATUS</h2>
+  <div id="genStatus" class="statusBox">---</div>
+</div>
+
+<!-- PW ON -->
+<div class="panel">
+  <h2><span class="material-icons">power_settings_new</span> PW ON</h2>
+  <button class="btn green" onclick="send('AVSmohan/project1/PW','ON')">
+    <span class='material-icons icon'>toggle_on</span> ON
+  </button>
+</div>
+
+<!-- PW STATUS -->
+<div class="panel">
+  <h2><span class="material-icons">info</span> PW STATUS</h2>
+  <div id="pwStatus" class="statusBox">---</div>
+</div>
+
+<!-- PW OFF -->
+<div class="panel">
+  <h2><span class="material-icons">power_off</span> PW OFF</h2>
+  <button class="btn red" onclick="send('AVSmohan/project1/PW','OFF')">
+    <span class='material-icons icon'>toggle_off</span> OFF
+  </button>
+</div>
+
+<!-- GEN MODE ON -->
+<div class="panel">
+  <h2><span class="material-icons">settings_power</span> GEN MODE ON</h2>
+  <button class="btn green" onclick="send('AVSmohan/project1/GM','ON')">
+    <span class='material-icons icon'>play_arrow</span> ON
+  </button>
+</div>
+
+<!-- GEN MODE STATUS -->
+<div class="panel">
+  <h2><span class="material-icons">info</span> GEN MODE STATUS</h2>
+  <div id="gmStatus" class="statusBox">---</div>
+</div>
+
+<!-- GEN MODE OFF -->
+<div class="panel">
+  <h2><span class="material-icons">stop_circle</span> GEN MODE OFF</h2>
+  <button class="btn red" onclick="send('AVSmohan/project1/GM','OFF')">
+    <span class='material-icons icon'>stop</span> OFF
+  </button>
+</div>
+
+<!-- GEN 1 ON -->
+<div class="panel">
+  <h2><span class="material-icons">energy_savings_leaf</span> GEN 1 ON</h2>
+  <button class="btn green" onclick="send('AVSmohan/project1/relay/2','ON')">
+    <span class='material-icons icon'>toggle_on</span> ON
+  </button>
+</div>
+
+<!-- GEN 1 STATUS -->
+<div class="panel">
+  <h2><span class="material-icons">info</span> GEN 1 STATUS</h2>
+  <div id="g1Status" class="statusBox">---</div>
+</div>
+
+<!-- GEN 1 OFF -->
+<div class="panel">
+  <h2><span class="material-icons">power_off</span> GEN 1 OFF</h2>
+  <button class="btn red" onclick="send('AVSmohan/project1/relay/2','OFF')">
+    <span class='material-icons icon'>toggle_off</span> OFF
+  </button>
+</div>
+
+<!-- FAN ON -->
+<div class="panel">
+  <h2><span class="material-icons">air</span> FAN ON</h2>
+  <button class="btn green" onclick="send('AVSmohan/project1/relay/1','ON')">
+    <span class='material-icons icon'>fan</span> ON
+  </button>
+</div>
+
+<!-- FAN STATUS -->
+<div class="panel">
+  <h2><span class="material-icons">info</span> FAN STATUS</h2>
+  <div id="fanStatus" class="statusBox">---</div>
+</div>
+
+<!-- FAN OFF -->
+<div class="panel">
+  <h2><span class="material-icons">air</span> FAN OFF</h2>
+  <button class="btn red" onclick="send('AVSmohan/project1/relay/1','OFF')">
+    <span class='material-icons icon'>close</span> OFF
+  </button>
+</div>
+
+</div>
+
+<script>
+// AUTO-RECONNECT + RETRY
+let reconnectTime = 2000;
+
+function connectMQTT() {
+  console.log("Connecting...");
+
+  const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt", {
+    reconnectPeriod: 2000,  // Auto reconnect
+    connectTimeout: 5000
+  });
+
+  const subs = [
+    "83095/esp32/status",
+    "83095/project1/MP",
+    "83095/project1/GP",
+    "83095/project11/generator/status",
+    "83095/project1/PW/status",
+    "83095/project1/GM/status",
+    "83095/project1/relay/2",
+    "83095/project1/relay/1"
+  ];
+
+  client.on("connect", () => {
+    console.log("Connected");
+    subs.forEach(t => client.subscribe(t));
+  });
+
+  client.on("reconnect", () => {
+    console.log("Reconnecting...");
+  });
+
+  client.on("error", () => {
+    console.log("Error, retrying...");
+  });
+
+  // HANDLE MESSAGES
+  client.on("message", (topic, msg) => {
+    const m = msg.toString();
+
+    if (topic === "83095/project1/MP") {
+      document.getElementById("mpStatus").innerHTML = m;
+      if (m === "NO") document.getElementById("alarmSound").play();
+    }
+
+    if (topic === "83095/esp32/status")
+      document.getElementById("espStatus").innerHTML = m;
+
+    if (topic === "83095/project1/GP")
+      document.getElementById("gpStatus").innerHTML = m;
+
+    if (topic === "83095/project11/generator/status")
+      document.getElementById("genStatus").innerHTML = m;
+
+    if (topic === "83095/project1/PW/status")
+      document.getElementById("pwStatus").innerHTML = m;
+
+    if (topic === "83095/project1/GM/status")
+      document.getElementById("gmStatus").innerHTML = m;
+
+    if (topic === "83095/project1/relay/2")
+      document.getElementById("g1Status").innerHTML = m;
+
+    if (topic === "83095/project1/relay/1")
+      document.getElementById("fanStatus").innerHTML = m;
+  });
+
+  // PUBLISH FUNCTION
+  window.send = function (topic, payload) {
+    client.publish(topic, payload, { qos: 1, retain: true });
+  };
+}
+
+connectMQTT();
+</script>
+
+</body>
+</html>
